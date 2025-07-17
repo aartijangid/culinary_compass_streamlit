@@ -13,8 +13,5 @@ black==23.3.0
 protobuf==4.23.3
 streamlit
 openpyxl
-requests
-fastapi
-uvicorn
 sentence-transformers
 plotly

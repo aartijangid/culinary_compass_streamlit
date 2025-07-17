@@ -1,16 +1,9 @@
 import pandas as pd
 import streamlit as st
 from datetime import date
-import requests
 from utils.food_recommend import recommend_food
 
-API_BASE_URL = "http://127.0.0.1:8000"
-SAVE_HISTORY_URL = f"{API_BASE_URL}/save-history/"
-GET_RECOMMENDATION_URL = f"{API_BASE_URL}/get-recommendation/"
-
 st.set_page_config(page_title="Food Recommendation System", layout="wide")
-##logo
-#st.sidebar.image("assets/logo.png", width=150)
 
 # Add this CSS for the page header
 st.markdown("""
@@ -106,13 +99,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# st.markdown("""
-#         <div class="header-container">
-#             <span class="header-icon">🍽️</span>
-#             <h1>Culinary Compass <span style="font-size: 1.5rem; font-weight: 900;">- Flavor Meets Wellness</span></h1>
-#         </div> 
-#     """, unsafe_allow_html=True)
-
 def load_data():
     """Load processed food data and extract unique categories."""
     df = pd.read_csv("data/preprocessed/food.csv")
@@ -139,69 +125,8 @@ def calculate_bmi(weight, height):
     return bmi, category
 
 def get_recommendation(preference, deficiencies):
-    # try:
-    #     response = requests.get(
-    #         GET_RECOMMENDATION_URL,
-    #         json={"food_preference": preference, "deficiencies": deficiencies},
-    #         timeout=5
-    #     )
-    #     if response.status_code == 200:
-    #         return response.json()["recommendation"]
-    #     else:
-    #         st.error(f"API Error: {response.text}")
-    #         return None
-    # except requests.exceptions.RequestException as e:
-    #     st.error(f"API Connection Error: {str(e)}")
-    #     return None
     recommendations = recommend_food(deficiencies, preference)
     return recommendations
-
-def save_to_api(user_data: dict, recommendation: list):
-    """Save user data and recommendations to API."""
-    try:
-        # Convert recommendation list to formatted string
-        recommendation_str = ""
-        for main_cat in recommendation:
-            recommendation_str += f"\n{main_cat['main_category']}\n"
-            for sub_cat in main_cat['sub_categories']:
-                recommendation_str += f"{sub_cat['name']}\n"
-                for food in sub_cat['foods']:
-                    food_name = food['food_name']
-                    nutrients = food['nutrients']
-            
-                    # Format nutrient values as a comma-separated string
-                    nutrient_str = ", ".join([f"{key}: {value}" for key, value in nutrients.items()])
-            
-                    # Append food name with its nutrients
-                    recommendation_str += f"  - {food_name} ({nutrient_str})\n"
-                    #recommendation_str += f"  - {food}\n"
-                    
-        # Prepare data to match UserHistory model
-        history_data = {
-            "name": str(user_data['name']),
-            "age": int(user_data['age']),
-            "gender": str(user_data['gender']),
-            "height": float(user_data['height']),
-            "weight": float(user_data['weight']),
-            "bmi": float(user_data['bmi']),
-            "bmi_category": str(user_data['bmi_category']),
-            "food_preference": str(user_data['food_preference']),
-            "deficiencies": list(user_data['deficiencies']),
-            "recommendations": recommendation_str
-        }
-        
-        # Make API call to save history
-        response = requests.post(SAVE_HISTORY_URL, json=history_data)
-        if response.status_code == 200:
-            print("History saved successfully!")
-        else:
-            print(f"Failed to save history. Status code: {response.status_code}")
-            print(f"Response: {response.text}")
-            st.error("Failed to save history.")
-            
-    except Exception as e:
-        print(f"Error saving to API: {str(e)}")
-        st.error("Failed to save data to API. Please try again.")
 
 def display_selected_foods(selected_foods):
     """
@@ -324,43 +249,7 @@ def main():
         st.session_state['previous_preference'] = food_preference
         # Force a rerun to update the UI
         st.rerun()
-
-    # st.sidebar.write("Select Deficiencies:")
-    # cols = st.sidebar.columns(2)
     
-    # # Check if any deficiency checkbox was clicked
-    # any_deficiency_clicked = False
-    # selected_deficiencies = []
-    
-    # # Handle deficiency selection and detect changes
-    # for i, d in enumerate(deficiencies):
-    #     # Create checkbox in appropriate column
-    #     was_selected = d in st.session_state.get('previous_deficiencies', [])
-    #     is_selected = cols[i % 2].checkbox(d, key=f"def_{d}", value=was_selected)
-        
-    #     # Check if this deficiency's state changed
-    #     if is_selected != was_selected:
-    #         any_deficiency_clicked = True
-        
-    #     # Add to selected deficiencies if checked
-    #     if is_selected:
-    #         selected_deficiencies.append(d)
-    
-    # # Clear session state if any deficiency was clicked
-    # if any_deficiency_clicked:
-    #     # Store current deficiency selection before clearing
-    #     st.session_state['previous_deficiencies'] = selected_deficiencies
-        
-    #     # Clear other session state values
-    #     st.session_state['user_data'] = None
-    #     st.session_state['recommendation'] = None
-    #     st.session_state['selected_foods'] = set()
-        
-    #     # Force a rerun to update the UI
-    #     st.rerun()
-
-    ##added
-        
     # Maximum number of selections allowed
     max_selections = 3
 
@@ -438,9 +327,6 @@ def main():
         }
         st.session_state['recommendation'] = recommendation
 
-        # Save to API
-        save_to_api(st.session_state['user_data'], recommendation)
-
     # Display User Info and Recommendations if available
     if not st.session_state['user_data']:
         st.markdown(
@@ -496,12 +382,7 @@ def main():
                                 if food["food_name"] == food_name:
                                     nutrient_values = food["nutrients"]
                                     nutrient_str = ", ".join([f"{nutrient}: {value}" for nutrient, value in nutrient_values.items()])
-                                    # Display food name and nutrients **before the checkbox**
-                                    #st.write(f"**{food_name}:** {nutrient_str}")
-
-                        # Display checkbox for selecting food
-                           # selected = col.checkbox(food_name + ' ' + nutrient_str,key=f"food_{food_name}", value=food_name in st.session_state["selected_foods"])
-                           
+   
                            # # Convert nutrient_str into a dictionary
                             nutrient_dict = dict(item.split(": ") for item in nutrient_str.split(", "))
 
@@ -528,9 +409,6 @@ def main():
 
                             nutrient_display += "</div>"  # Close the flex container
 
-                            # Display food name and nutrient progress indicators in a single line
-                            #st.markdown(f"**{food_name}** <br>{nutrient_display}", unsafe_allow_html=True)
-
                             with col:
                                 # Use columns inside the main column to align checkbox & nutrients in one row
                                 c1, c2 = st.columns([3, 2])  # Adjust ratio for spacing
@@ -538,26 +416,12 @@ def main():
                                     selected = st.checkbox(f"{food_name}", key=f"food_{food_name}")
                                 with c2:
                                     st.markdown(nutrient_display, unsafe_allow_html=True) # Nutrient indicators in col
-                            # Checkbox to select food (optional, this doesn't affect nutrient display)
-                            # selected = st.checkbox(f"Select {food_name}", key=f"food_{food_name}")
-                            # st.markdown(f"{nutrient_display}", unsafe_allow_html=True)
-                            
-
-
+                    
                     # Update session state based on user selection
                             if selected:
                                 st.session_state["selected_foods"].add(food_name)
                             else:
                                 st.session_state["selected_foods"].discard(food_name)
-
-        
-                            
-            # # Show selected foods
-            # st.subheader("Your Selected Foods:")
-            # if st.session_state["selected_foods"]:
-            #     st.write(", ".join(st.session_state["selected_foods"]))
-            # else:
-            #     st.write("No foods selected yet.")
 
             # display the selected foods from the food recommendation page 
             if 'selected_foods' in st.session_state:
