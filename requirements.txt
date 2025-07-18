@@ -1,17 +1,11 @@
-numpy>=1.26.0
-python_version >= "3.12"
-jupyterlab==3.6.3
 matplotlib==3.7.1
-pandas==1.5.3
-seaborn==0.12.2
-scikit-learn==1.2.2
-statsmodels==0.13.5
-pytest==7.4.0
-testbook==0.4.2
-parsenvy==3.0.2
-black==23.3.0
+numpy>=1.25.0
+pandas>=2.1.4
+seaborn==0.11.2
+scikit-learn>=1.5.0
+plotly==5.22.0
 protobuf==4.23.3
-streamlit>=1.25.0
-openpyxl>=3.1.2
-sentence-transformers>=2.2.2
-plotly>=5.15.0
+streamlit
+openpyxl
+requests
+sentence-transformers
