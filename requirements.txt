@@ -7,5 +7,4 @@ plotly==5.22.0
 protobuf==4.23.3
 streamlit
 openpyxl
-requests
-sentence-transformers
+sentence-transformers==2.2.2  # ✅ compatible with Python 3.11
