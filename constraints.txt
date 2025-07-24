@@ -1,1 +1,0 @@
-pyarrow==9999  # this fake version prevents pyarrow from being installed
